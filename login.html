@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>कृषि लॉगिन | Agro Login</title>
+  <style>
+    body {
+      
+      background: url('https://img.freepik.com/premium-photo/happy-indian-farmer-showing-indian-ruppees-field_75648-2895.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: "Noto Sans Devanagari", Arial, sans-serif;
+      margin: 0;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      width: 340px;
+      backdrop-filter: blur(5px);
+      position: relative;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #1b5e20;
+    }
+
+    .msg {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .link a {
+      text-decoration: none;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+
+    .lang-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .lang-btn:hover {
+      background: #1b5e20;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="box">
+    <button class="lang-btn" id="toggleLang">English</button>
+    <h2 id="title">कृषि लॉगिन</h2>
+
+    <form id="loginForm">
+      <label for="farmerid" id="labelFarmer">किसान आईडी</label>
+      <input type="text" id="farmerid" placeholder="अपनी किसान आईडी दर्ज करें" required>
+
+      <label for="password" id="labelPass">पासवर्ड</label>
+      <input type="password" id="password" placeholder="पासवर्ड दर्ज करें" required>
+
+      <button type="submit" id="loginBtn">लॉगिन करें</button>
+    </form>
+
+    <p class="msg" id="msg"></p>
+    <div class="link">
+      <a href="create.html" id="createLink">क्या आपके पास आईडी नहीं है? नया बनाएं</a>
+    </div>
+  </div>
+
+  <script>
+    let lang = "hi"; // Default Hindi
+
+    document.getElementById("toggleLang").addEventListener("click", () => {
+      lang = lang === "hi" ? "en" : "hi";
+      updateLanguage();
+    });
+
+    function updateLanguage() {
+      if (lang === "en") {
+        document.getElementById("toggleLang").textContent = "हिन्दी";
+        document.getElementById("title").textContent = "Agro Login";
+        document.getElementById("labelFarmer").textContent = "Farmer ID";
+        document.getElementById("farmerid").placeholder = "Enter Farmer ID";
+        document.getElementById("labelPass").textContent = "Password";
+        document.getElementById("password").placeholder = "Enter Password";
+        document.getElementById("loginBtn").textContent = "Login";
+        document.getElementById("createLink").textContent = "Don't have an ID? Create one";
+      } else {
+        document.getElementById("toggleLang").textContent = "English";
+        document.getElementById("title").textContent = "कृषि लॉगिन";
+        document.getElementById("labelFarmer").textContent = "किसान आईडी";
+        document.getElementById("farmerid").placeholder = "अपनी किसान आईडी दर्ज करें";
+        document.getElementById("labelPass").textContent = "पासवर्ड";
+        document.getElementById("password").placeholder = "पासवर्ड दर्ज करें";
+        document.getElementById("loginBtn").textContent = "लॉगिन करें";
+        document.getElementById("createLink").textContent = "क्या आपके पास आईडी नहीं है? नया बनाएं";
+      }
+    }
+
+    // ✅ LOGIN LOGIC + REDIRECT TO DASHBOARD
+    document.getElementById("loginForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      let farmerid = document.getElementById("farmerid").value.trim();
+      let password = document.getElementById("password").value.trim();
+      let userData = localStorage.getItem(farmerid);
+
+      if(!userData){
+        document.getElementById("msg").textContent =
+          lang === "hi" ? "❌ किसान आईडी नहीं मिली!" : "❌ Farmer ID not found!";
+        document.getElementById("msg").className = "msg error";
+        return;
+      }
+
+      let user = JSON.parse(userData);
+      if(user.password === password){
+        localStorage.setItem("loggedInUser", farmerid);
+        document.getElementById("msg").textContent =
+          lang === "hi" ? "✅ सफलतापूर्वक लॉगिन हुआ!" : "✅ Login successful!";
+        // 👇 REDIRECT TO DASHBOARD PAGE HERE
+        setTimeout(()=>{ window.location.href = "dashboard3.html"; }, 1000);
+      } else {
+        document.getElementById("msg").textContent =
+          lang === "hi" ? "❌ गलत पासवर्ड!" : "❌ Wrong password!";
+        document.getElementById("msg").className = "msg error";
+      }
+    });
+  </script>
+</body>
+</html>

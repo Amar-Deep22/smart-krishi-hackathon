@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroSmart Weather Page</title>
+<style>
+  body{
+    font-family:"Poppins",sans-serif;
+    margin:0;
+    background:linear-gradient(to right,#a8edea,#fed6e3);
+    min-height:100vh;
+    color:#333;
+  }
+  header{
+    background:#2e7d32;
+    color:white;
+    text-align:center;
+    padding:20px;
+    font-size:26px;
+    font-weight:bold;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  }
+  .container{
+    max-width:1100px;
+    margin:20px auto;
+    padding:20px;
+  }
+  .card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    margin-bottom:25px;
+  }
+  h2{color:#2e7d32; margin-bottom:15px;}
+  .currentWeather p, .forecastDay p{margin:6px 0; font-size:16px;}
+  .forecastGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:15px;
+    margin-top:15px;
+  }
+  .forecastDay{
+    background:#e8f5e9;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  }
+  input, button{
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    font-size:16px;
+    border:1px solid #ccc;
+  }
+  button{
+    background:#2e7d32;
+    color:white;
+    border:none;
+    cursor:pointer;
+  }
+  button:hover{background:#1b5e20;}
+  footer{
+    text-align:center;
+    padding:20px;
+    background:#2e7d32;
+    color:white;
+    font-size:16px;
+    margin-top:30px;
+  }
+</style>
+</head>
+<body>
+
+<header>🌦 AgroSmart Live Weather</header>
+
+<div class="container">
+
+  <!-- Manual Location Input -->
+  <div class="card">
+    <h2>🏙 Enter Location (Manual)</h2>
+    <input type="text" id="manualLocation" placeholder="Enter city name or coordinates (lat,lon)">
+    <button onclick="manualWeather()">Get Weather</button>
+    <p style="font-size:14px;color:#444;margin-top:5px;">(If automatic detection fails, enter manually)</p>
+  </div>
+
+  <!-- Current Weather -->
+  <div class="card currentWeather">
+    <h2>🌤 Current Weather</h2>
+    <p><b>Location:</b> <span id="location">Detecting...</span></p>
+    <p><b>Time:</b> <span id="currentTime">--:--</span></p>
+    <p><b>Temperature:</b> <span id="temperature">--</span>°C</p>
+    <p><b>Condition:</b> <span id="condition">--</span></p>
+    <p><b>Wind Speed:</b> <span id="windSpeed">--</span> km/h</p>
+    <button onclick="getWeather()">🔄 Refresh Weather</button>
+  </div>
+
+  <!-- 15-Day Forecast -->
+  <div class="card">
+    <h2>📅 15-Day Weather Forecast</h2>
+    <div class="forecastGrid" id="forecastGrid">
+      <p style="text-align:center; width:100%;">Loading forecast...</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>© 2025 AgroSmart — Empowering Farmers with Smart Tech 🌾</footer>
+
+<script>
+// -------------------- AUTO LOCATION WEATHER --------------------
+async function getWeather(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(async (pos)=>{
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      // Reverse geocode to get place name
+      try{
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`);
+        const geoData = await geo.json();
+        const place = geoData.results && geoData.results[0]?.name 
+                      ? geoData.results[0].name 
+                      : `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        updateWeather(lat, lon, place);
+      }catch{
+        updateWeather(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
+      }
+    }, async function(){
+      // If user denies location, fallback using IP-based location
+      alert("Location access denied. Trying IP-based detection...");
+      try{
+        const ipRes = await fetch("https://ipapi.co/json/");
+        const ipData = await ipRes.json();
+        if(ipData.latitude && ipData.longitude){
+          updateWeather(ipData.latitude, ipData.longitude, ipData.city || "Your Location");
+        }else{
+          alert("Unable to detect location. Please enter manually.");
+        }
+      }catch(err){
+        console.error(err);
+        alert("Unable to auto-detect location. Enter manually.");
+      }
+    });
+  } else{
+    alert("Geolocation not supported. Please enter location manually.");
+  }
+}
+
+// -------------------- MANUAL LOCATION WEATHER --------------------
+async function manualWeather(){
+  const loc = document.getElementById("manualLocation").value.trim();
+  if(!loc) return alert("Please enter a location!");
+  
+  if(loc.includes(",")){
+    const parts = loc.split(",");
+    const lat = parseFloat(parts[0]);
+    const lon = parseFloat(parts[1]);
+    updateWeather(lat, lon, loc);
+  } else {
+    try{
+      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${loc}&count=1`);
+      const geoData = await geoRes.json();
+      if(!geoData.results || geoData.results.length==0) return alert("Location not found!");
+      const lat = geoData.results[0].latitude;
+      const lon = geoData.results[0].longitude;
+      updateWeather(lat, lon, geoData.results[0].name);
+    } catch(err){
+      console.error(err);
+      alert("Unable to fetch location data.");
+    }
+  }
+}
+
+// -------------------- WEATHER FETCH --------------------
+async function updateWeather(lat, lon, locationName){
+  document.getElementById("location").textContent = locationName;
+  const now = new Date();
+  document.getElementById("currentTime").textContent = 
+    `${now.getHours()}:${now.getMinutes().toString().padStart(2,"0")}`;
+
+  try{
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&current_weather=true&forecast_days=15&timezone=auto`);
+    const data = await res.json();
+
+    // Current Weather
+    document.getElementById("temperature").textContent = data.current_weather.temperature;
+    document.getElementById("windSpeed").textContent = data.current_weather.windspeed;
+    document.getElementById("condition").textContent = getWeatherDescription(data.current_weather.weathercode);
+
+    // Forecast
+    const grid = document.getElementById("forecastGrid");
+    grid.innerHTML = "";
+    data.daily.time.forEach((day, i)=>{
+      const maxT = data.daily.temperature_2m_max[i];
+      const minT = data.daily.temperature_2m_min[i];
+      const cond = getWeatherDescription(data.daily.weathercode[i]);
+      grid.innerHTML += `<div class="forecastDay">
+        <p><b>${day}</b></p>
+        <p>${cond}</p>
+        <p>🌡 Max: ${maxT}°C</p>
+        <p>🌡 Min: ${minT}°C</p>
+      </div>`;
+    });
+  } catch(err){
+    console.error(err);
+    alert("Unable to fetch weather data.");
+  }
+}
+
+function getWeatherDescription(code){
+  const map={0:"Clear Sky",1:"Mainly Clear",2:"Partly Cloudy",3:"Overcast",45:"Fog",48:"Rime Fog",51:"Light Drizzle",53:"Moderate Drizzle",55:"Dense Drizzle",61:"Light Rain",63:"Moderate Rain",65:"Heavy Rain",71:"Snow",73:"Moderate Snow",75:"Heavy Snow",80:"Rain Showers",81:"Moderate Showers",82:"Violent Showers"};
+  return map[code] || "Unknown";
+}
+
+// -------------------- INIT --------------------
+window.onload = getWeather;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Agro ID</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: url('https://i.pinimg.com/736x/d1/42/d8/d142d8b7a2e493ab8e6523ec42a5c420.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      backdrop-filter: blur(2px);
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      width: 350px;
+    }
+
+    .container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2e7d32;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #2e7d32;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #1b5e20;
+    }
+
+    .lang-toggle {
+      background: #0288d1;
+      margin-bottom: 15px;
+    }
+
+    .lang-toggle:hover {
+      background: #01579b;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .link a {
+      text-decoration: none;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="lang-toggle" id="langBtn">हिन्दी / English</button>
+    <h2 id="title">Create Agro ID</h2>
+    <form id="idForm">
+      <div class="form-group">
+        <label for="fullname" id="lblFullname">Full Name</label>
+        <input type="text" id="fullname" placeholder="Enter your full name" required>
+      </div>
+      <div class="form-group">
+        <label for="phone" id="lblPhone">Contact Number</label>
+        <input type="tel" id="phone" placeholder="Enter your phone number" required>
+      </div>
+      <div class="form-group">
+        <label for="farmerid" id="lblFarmer">Farmer ID</label>
+        <input type="text" id="farmerid" placeholder="Enter your Farmer ID" required>
+      </div>
+      <div class="form-group">
+        <label for="password" id="lblPassword">Set Password</label>
+        <input type="password" id="password" placeholder="Create password" required>
+      </div>
+      <button type="submit" id="submitBtn">Create ID</button>
+    </form>
+    <p class="message" id="msg"></p>
+    <div class="link">
+      <a href="login.html" id="loginLink">Already have an ID? Login</a>
+    </div>
+  </div>
+
+  <script>
+    let hindiMode = false;
+
+    const translations = {
+      en: {
+        title: "Create Agro ID",
+        fullname: "Full Name",
+        fullnamePh: "Enter your full name",
+        phone: "Contact Number",
+        phonePh: "Enter your phone number",
+        farmer: "Farmer ID",
+        farmerPh: "Enter your Farmer ID",
+        password: "Set Password",
+        passwordPh: "Create password",
+        submit: "Create ID",
+        exists: "❌ Farmer ID already exists, try login!",
+        success: "✅ ID Created Successfully!",
+        loginLink: "Already have an ID? Login"
+      },
+      hi: {
+        title: "एग्रो आईडी बनाएँ",
+        fullname: "पूरा नाम",
+        fullnamePh: "अपना पूरा नाम लिखें",
+        phone: "संपर्क नंबर",
+        phonePh: "अपना फ़ोन नंबर लिखें",
+        farmer: "किसान आईडी",
+        farmerPh: "अपनी किसान आईडी लिखें",
+        password: "पासवर्ड सेट करें",
+        passwordPh: "पासवर्ड बनाएँ",
+        submit: "आईडी बनाएँ",
+        exists: "❌ यह किसान आईडी पहले से मौजूद है, कृपया लॉगिन करें!",
+        success: "✅ आईडी सफलतापूर्वक बनाई गई!",
+        loginLink: "पहले से आईडी है? लॉगिन करें"
+      }
+    };
+
+    function switchLang() {
+      hindiMode = !hindiMode;
+      let lang = hindiMode ? "hi" : "en";
+      document.getElementById("title").textContent = translations[lang].title;
+      document.getElementById("lblFullname").textContent = translations[lang].fullname;
+      document.getElementById("fullname").placeholder = translations[lang].fullnamePh;
+      document.getElementById("lblPhone").textContent = translations[lang].phone;
+      document.getElementById("phone").placeholder = translations[lang].phonePh;
+      document.getElementById("lblFarmer").textContent = translations[lang].farmer;
+      document.getElementById("farmerid").placeholder = translations[lang].farmerPh;
+      document.getElementById("lblPassword").textContent = translations[lang].password;
+      document.getElementById("password").placeholder = translations[lang].passwordPh;
+      document.getElementById("submitBtn").textContent = translations[lang].submit;
+      document.getElementById("loginLink").textContent = translations[lang].loginLink;
+    }
+
+    document.getElementById("langBtn").addEventListener("click", switchLang);
+
+    // Form submission
+    document.getElementById("idForm").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      let fullname = document.getElementById("fullname").value;
+      let phone = document.getElementById("phone").value;
+      let farmerid = document.getElementById("farmerid").value;
+      let password = document.getElementById("password").value;
+
+      let lang = hindiMode ? "hi" : "en";
+
+      // check if Farmer ID already exists
+      if(localStorage.getItem(farmerid)){
+        document.getElementById("msg").textContent = translations[lang].exists;
+        document.getElementById("msg").className = "message error";
+        return;
+      }
+
+      let userData = {fullname, phone, farmerid, password};
+      localStorage.setItem(farmerid, JSON.stringify(userData));
+
+      document.getElementById("msg").textContent = translations[lang].success;
+      document.getElementById("msg").className = "message success";
+      document.getElementById("idForm").reset();
+    });
+  </script>
+</body>
+</html>
